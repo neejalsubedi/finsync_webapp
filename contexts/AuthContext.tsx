@@ -15,8 +15,10 @@ import {
   signOut,
   sendPasswordResetEmail,
   updateProfile,
+  signInWithPopup,
+  getAdditionalUserInfo,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, googleProvider } from "@/lib/firebase";
 import { addUserToDatabase } from "@/lib/users";
 
 interface AuthContextType {
@@ -29,6 +31,7 @@ interface AuthContextType {
     name: string,
     phoneNumber?: string,
   ) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
@@ -63,6 +66,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await addUserToDatabase(result.user.uid, email, name, phoneNumber || "");
   };
 
+  const loginWithGoogle = async () => {
+    const result = await signInWithPopup(auth, googleProvider);
+    const additionalInfo = getAdditionalUserInfo(result);
+    
+    // Only add to database if it's a new user
+    if (additionalInfo?.isNewUser) {
+      const user = result.user;
+      await addUserToDatabase(
+        user.uid,
+        user.email || "",
+        user.displayName || "User",
+        user.phoneNumber || ""
+      );
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
@@ -73,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, resetPassword }}
+      value={{ user, loading, login, register, loginWithGoogle, logout, resetPassword }}
     >
       {children}
     </AuthContext.Provider>

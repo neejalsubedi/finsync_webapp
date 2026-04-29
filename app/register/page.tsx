@@ -14,6 +14,7 @@ import {
   FiUser,
   FiPhone,
 } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -23,7 +24,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
@@ -60,6 +61,24 @@ export default function RegisterPage() {
         toast.error("Please enter a valid email address");
       } else {
         toast.error("Failed to create account. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      await loginWithGoogle();
+      toast.success("Signed in successfully!");
+      router.push("/dashboard");
+    } catch (error: unknown) {
+      console.error(error);
+      const message =
+        error instanceof Error ? error.message : "Failed to sign in with Google";
+      if (!message.includes("popup-closed-by-user")) {
+        toast.error("Failed to sign in with Google.");
       }
     } finally {
       setLoading(false);
@@ -219,6 +238,28 @@ export default function RegisterPage() {
           )}
         </button>
       </form>
+
+      {/* Divider */}
+      <div className="mt-6 flex items-center justify-center">
+        <div className="h-px w-full bg-gray-200 dark:bg-gray-800"></div>
+        <span className="bg-gray-50 px-4 text-sm text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+          OR
+        </span>
+        <div className="h-px w-full bg-gray-200 dark:bg-gray-800"></div>
+      </div>
+
+      {/* Google Sign In */}
+      <div className="mt-6">
+        <button
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          type="button"
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white py-3 text-base font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+        >
+          <FcGoogle className="h-5 w-5" />
+          Sign up with Google
+        </button>
+      </div>
 
       {/* Footer */}
       <p className="text-center text-sm text-gray-600 dark:text-gray-400">
