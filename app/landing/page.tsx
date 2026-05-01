@@ -305,6 +305,46 @@ export default function LandingPage() {
         .footer-links a { font-size: .8rem; color: #475569; text-decoration: none; transition: color .2s; }
         .footer-links a:hover { color: #94a3b8; }
 
+        /* ── Light mode ── */
+        @media (prefers-color-scheme: light) {
+          .landing-root { background: #f8fafc; color: #0f172a; }
+          .nav { background: rgba(248,250,252,.88); border-bottom-color: rgba(0,0,0,.08); }
+          .nav-logo { color: #0f172a; }
+          .nav-links a { color: #475569; }
+          .nav-links a:hover { color: #0f172a; }
+          .btn-ghost { border-color: rgba(0,0,0,.18); color: #0f172a; }
+          .btn-ghost:hover { border-color: rgba(0,0,0,.35); color: #0f172a; }
+          .hero h1 { color: #0f172a; }
+          .hero-sub { color: #475569; }
+          .btn-outline-lg { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.12); color: #0f172a; }
+          .btn-outline-lg:hover { background: rgba(0,0,0,.08); border-color: rgba(0,0,0,.22); }
+          .mockup-card { background: linear-gradient(145deg,#fff,#f1f5f9); border-color: rgba(0,0,0,.08); box-shadow: 0 20px 60px rgba(0,0,0,.1); }
+          .mockup-title { color: #94a3b8; }
+          .mockup-amount { color: #0f172a; }
+          .mockup-amount span { color: #94a3b8; }
+          .bar { background: rgba(0,0,0,.08); }
+          .cat-chip { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.07); color: #475569; }
+          .stats-section { border-color: rgba(0,0,0,.08); }
+          .stat-number { color: #0f172a; }
+          .stat-label { color: #64748b; }
+          .section-title { color: #0f172a; }
+          .section-sub { color: #64748b; }
+          .feature-card { background: #fff; border-color: rgba(0,0,0,.08); }
+          .feature-card:hover { border-color: rgba(0,0,0,.15); box-shadow: 0 20px 60px rgba(0,0,0,.08); }
+          .feature-title { color: #0f172a; }
+          .feature-desc { color: #64748b; }
+          .how-section { background: rgba(241,245,249,.8); }
+          .step-title { color: #0f172a; }
+          .step-desc { color: #64748b; }
+          .cta-card { background: linear-gradient(145deg,#fff,#f1f5f9); border-color: rgba(16,185,129,.25); box-shadow: 0 0 60px rgba(16,185,129,.06); }
+          .cta-title { color: #0f172a; }
+          .cta-sub { color: #64748b; }
+          .footer { border-top-color: rgba(0,0,0,.08); }
+          .footer-copy { color: #94a3b8; }
+          .footer-links a { color: #94a3b8; }
+          .footer-links a:hover { color: #475569; }
+        }
+
         /* ── Responsive ── */
         @media (max-width: 640px) {
           .nav-links { display: none; }
