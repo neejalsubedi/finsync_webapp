@@ -1,510 +1,269 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 
-/* ─── tiny SVG icons ─────────────────────────────────────── */
-const IconShield = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-const IconChart = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-  </svg>
-);
-const IconTarget = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <circle cx="12" cy="12" r="6" />
-    <circle cx="12" cy="12" r="2" />
-  </svg>
-);
-const IconBell = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-const IconArrow = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
+/* ── CONSTANTS ── */
+const COLORS = {
+  primary: "#5E72E4",
+  dark: "#1A202C",
+  lightBg: "#F8F9FE",
+  grayText: "#718096",
+};
+
+/* ── REUSABLE COMPONENTS ── */
+
+const Navbar = () => (
+  <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 bg-white/80 backdrop-blur-xl border border-gray-100 px-6 py-4 rounded-full flex items-center justify-between shadow-sm">
+    <div className="flex items-center gap-2 pl-4">
+      <div className="w-8 h-8 bg-[#5E72E4] rounded-lg flex items-center justify-center text-white font-bold">FS</div>
+      <span className="font-black text-xl tracking-tighter text-[#1A202C]">FinSync</span>
+    </div>
+    <div className="hidden lg:flex items-center gap-8 text-sm font-bold text-[#718096]">
+      <a href="#" className="text-[#1A202C] border-b-2 border-[#5E72E4] pb-1">Home</a>
+      <a href="#" className="hover:text-[#5E72E4] transition">About</a>
+      <a href="#" className="hover:text-[#5E72E4] transition">Services</a>
+      <a href="#" className="hover:text-[#5E72E4] transition">Tools</a>
+      <a href="#" className="hover:text-[#5E72E4] transition">Blog</a>
+      <a href="#" className="hover:text-[#5E72E4] transition">Testimonials</a>
+    </div>
+    <button className="bg-[#1A202C] text-white px-7 py-3 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-opacity-90 transition">
+      Get Started <span className="text-lg">→</span>
+    </button>
+  </nav>
 );
 
-/* ─── feature cards data ──────────────────────────────────── */
-const features = [
-  {
-    icon: <IconChart />,
-    title: "Smart Expense Tracking",
-    desc: "Automatically categorise every transaction. See where your money goes at a glance with beautiful, real-time charts.",
-    color: "emerald",
-  },
-  {
-    icon: <IconTarget />,
-    title: "Goal-Based Budgets",
-    desc: "Set spending limits per category, track progress daily, and get nudges before you overshoot.",
-    color: "violet",
-  },
-  {
-    icon: <IconBell />,
-    title: "Instant Alerts",
-    desc: "Never miss a bill or unusual charge. Real-time notifications keep you one step ahead of your finances.",
-    color: "amber",
-  },
-  {
-    icon: <IconShield />,
-    title: "Bank-Level Security",
-    desc: "Your data is encrypted end-to-end and protected by Firebase's enterprise-grade infrastructure.",
-    color: "sky",
-  },
-];
+const FeatureCard = ({ title, desc, icon, iconColor, imagePlaceholder }) => (
+  <div className="bg-[#F8F9FE] p-10 rounded-[48px] border border-transparent hover:border-gray-200 hover:bg-white hover:shadow-2xl transition-all group">
+    <div className={`w-12 h-12 ${iconColor} rounded-xl mb-8 flex items-center justify-center text-white text-xl shadow-lg`}>
+      {icon}
+    </div>
+    <h3 className="text-2xl font-black text-[#1A202C] mb-4">{title}</h3>
+    <p className="text-[#718096] leading-relaxed mb-10 text-lg">{desc}</p>
+    <div className="relative h-64 bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-inner flex items-end justify-center pt-6">
+       <div className={`w-4/5 h-full rounded-t-2xl ${imagePlaceholder} opacity-40`} />
+    </div>
+  </div>
+);
 
-/* ─── stat counter ────────────────────────────────────────── */
-function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
-  const [val, setVal] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      observer.disconnect();
-      let start = 0;
-      const step = Math.ceil(to / 60);
-      const id = setInterval(() => {
-        start += step;
-        if (start >= to) { setVal(to); clearInterval(id); }
-        else setVal(start);
-      }, 16);
-    });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [to]);
-  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
-}
+const AccordionItem = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-gray-100 py-6">
+      <button onClick={() => setIsOpen(!isOpen)} className="flex justify-between items-center w-full text-left">
+        <span className="text-lg font-bold text-[#1A202C]">{question}</span>
+        <span className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center font-bold">
+          {isOpen ? "−" : "+"}
+        </span>
+      </button>
+      {isOpen && <p className="mt-4 text-[#718096] leading-relaxed">{answer}</p>}
+    </div>
+  );
+};
 
-/* ─── main component ──────────────────────────────────────── */
+/* ── MAIN LANDING PAGE ── */
+
 export default function LandingPage() {
   return (
-    <div style={{ fontFamily: "var(--font-inter, Inter, system-ui, sans-serif)" }}>
-      <style>{`
-        /* Reset & base */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <div className="bg-white font-sans selection:bg-[#5E72E4] selection:text-white overflow-x-hidden">
+      <Navbar />
 
-        /* Gradient background */
-        .landing-root {
-          background: #030712;
-          color: #e2e8f0;
-          min-height: 100vh;
-          overflow-x: hidden;
-        }
-
-        /* ── Nav ── */
-        .nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0 clamp(1.5rem, 6vw, 5rem);
-          height: 64px;
-          background: rgba(3,7,18,.7);
-          backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(255,255,255,.06);
-        }
-        .nav-logo { display: flex; align-items: center; gap: .6rem; font-weight: 700; font-size: 1.25rem; color: #fff; text-decoration: none; }
-        .nav-logo-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg,#34d399,#10b981); box-shadow: 0 0 12px #34d399; }
-        .nav-links { display: flex; gap: 2rem; list-style: none; }
-        .nav-links a { color: #94a3b8; font-size: .875rem; text-decoration: none; transition: color .2s; }
-        .nav-links a:hover { color: #fff; }
-        .nav-cta {
-          display: flex; gap: .75rem; align-items: center;
-        }
-        .btn-ghost { background: none; border: 1px solid rgba(255,255,255,.15); color: #e2e8f0; padding: .45rem 1.1rem; border-radius: 8px; font-size: .875rem; cursor: pointer; text-decoration: none; transition: border-color .2s, color .2s; }
-        .btn-ghost:hover { border-color: rgba(255,255,255,.4); color: #fff; }
-        .btn-primary {
-          background: linear-gradient(135deg,#059669,#10b981);
-          color: #fff; padding: .5rem 1.3rem; border-radius: 8px;
-          font-size: .875rem; font-weight: 600; cursor: pointer;
-          text-decoration: none; border: none;
-          box-shadow: 0 0 20px rgba(16,185,129,.25);
-          transition: box-shadow .25s, transform .2s;
-        }
-        .btn-primary:hover { box-shadow: 0 0 32px rgba(16,185,129,.45); transform: translateY(-1px); }
-
-        /* ── Hero ── */
-        .hero {
-          min-height: 100vh; display: flex; flex-direction: column;
-          align-items: center; justify-content: center; text-align: center;
-          padding: 0 clamp(1.5rem, 6vw, 5rem);
-          position: relative;
-        }
-        .hero-glow {
-          position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
-          width: 800px; height: 800px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(16,185,129,.12) 0%, transparent 70%);
-          pointer-events: none;
-        }
-        .hero-badge {
-          display: inline-flex; align-items: center; gap: .5rem;
-          background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.25);
-          color: #34d399; font-size: .78rem; font-weight: 600; letter-spacing: .06em;
-          padding: .35rem 1rem; border-radius: 999px; margin-bottom: 2rem;
-          text-transform: uppercase;
-        }
-        .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-        .hero h1 {
-          font-size: clamp(2.8rem, 7vw, 5.5rem);
-          font-weight: 800; letter-spacing: -.03em; line-height: 1.08;
-          color: #fff; max-width: 14ch; margin: 0 auto .5rem;
-        }
-        .hero h1 .gradient-text {
-          background: linear-gradient(120deg,#34d399 20%,#6ee7b7);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .hero-sub {
-          max-width: 520px; margin: 1.25rem auto 2.5rem;
-          font-size: clamp(1rem, 2vw, 1.15rem); color: #94a3b8; line-height: 1.7;
-        }
-        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-        .btn-primary-lg {
-          background: linear-gradient(135deg,#059669,#10b981);
-          color: #fff; padding: .8rem 2rem; border-radius: 10px;
-          font-size: 1rem; font-weight: 600; cursor: pointer;
-          text-decoration: none; border: none;
-          box-shadow: 0 0 28px rgba(16,185,129,.3);
-          transition: box-shadow .25s, transform .2s;
-          display: inline-flex; align-items: center; gap: .5rem;
-        }
-        .btn-primary-lg:hover { box-shadow: 0 0 44px rgba(16,185,129,.5); transform: translateY(-2px); }
-        .btn-outline-lg {
-          background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12);
-          color: #e2e8f0; padding: .8rem 2rem; border-radius: 10px;
-          font-size: 1rem; font-weight: 500; cursor: pointer;
-          text-decoration: none; transition: background .2s, border-color .2s;
-        }
-        .btn-outline-lg:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.25); }
-
-        /* ── Mockup card ── */
-        .hero-mockup {
-          margin-top: 4.5rem; position: relative;
-          max-width: 780px; width: 100%;
-        }
-        .mockup-card {
-          background: linear-gradient(145deg,rgba(15,23,42,1),rgba(30,41,59,.9));
-          border: 1px solid rgba(255,255,255,.08);
-          border-radius: 20px; padding: 2rem;
-          box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
-        }
-        .mockup-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-        .mockup-title { font-size: .8rem; font-weight: 600; color: #64748b; letter-spacing: .08em; text-transform: uppercase; }
-        .mockup-badge { font-size: .72rem; padding: .25rem .7rem; border-radius: 999px; background: rgba(52,211,153,.12); color: #34d399; font-weight: 600; }
-        .mockup-amount { font-size: 2.8rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
-        .mockup-amount span { font-size: 1.5rem; color: #64748b; font-weight: 400; vertical-align: super; margin-right: .15rem; }
-        .mockup-change { font-size: .8rem; color: #34d399; margin-top: .25rem; }
-        .mockup-bars { display: flex; align-items: flex-end; gap: .5rem; height: 80px; margin-top: 1.5rem; }
-        .bar {
-          flex: 1; border-radius: 6px 6px 0 0;
-          background: rgba(255,255,255,.06);
-          animation: barGrow 1s ease forwards;
-          transform-origin: bottom;
-        }
-        .bar-active { background: linear-gradient(180deg,#34d399,#059669); }
-        @keyframes barGrow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
-        .mockup-categories { display: flex; gap: .75rem; margin-top: 1.5rem; flex-wrap: wrap; }
-        .cat-chip {
-          display: flex; align-items: center; gap: .45rem;
-          background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-          border-radius: 8px; padding: .4rem .75rem; font-size: .78rem; color: #94a3b8;
-        }
-        .cat-dot { width: 7px; height: 7px; border-radius: 50%; }
-
-        /* ── Stats ── */
-        .stats-section {
-          padding: 4rem clamp(1.5rem, 6vw, 5rem);
-          border-top: 1px solid rgba(255,255,255,.06);
-          border-bottom: 1px solid rgba(255,255,255,.06);
-        }
-        .stats-grid { display: flex; justify-content: center; gap: clamp(2rem, 6vw, 6rem); flex-wrap: wrap; }
-        .stat-item { text-align: center; }
-        .stat-number { font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 800; color: #fff; letter-spacing: -.02em; }
-        .stat-label { font-size: .82rem; color: #64748b; margin-top: .3rem; font-weight: 500; }
-
-        /* ── Features ── */
-        .features-section { padding: 6rem clamp(1.5rem, 6vw, 5rem); }
-        .section-label { font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #34d399; margin-bottom: .75rem; }
-        .section-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: #fff; letter-spacing: -.02em; line-height: 1.15; max-width: 28ch; }
-        .section-sub { color: #64748b; margin-top: .75rem; font-size: 1rem; max-width: 44ch; line-height: 1.7; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 3.5rem; }
-        .feature-card {
-          background: rgba(15,23,42,.7); border: 1px solid rgba(255,255,255,.07);
-          border-radius: 16px; padding: 1.75rem;
-          transition: transform .25s, box-shadow .25s, border-color .25s;
-          cursor: default;
-        }
-        .feature-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.14); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
-        .feature-icon {
-          width: 52px; height: 52px; border-radius: 12px;
-          display: flex; align-items: center; justify-content: center;
-          margin-bottom: 1.1rem;
-        }
-        .icon-emerald { background: rgba(16,185,129,.12); color: #34d399; }
-        .icon-violet  { background: rgba(139,92,246,.12); color: #a78bfa; }
-        .icon-amber   { background: rgba(245,158,11,.12); color: #fbbf24; }
-        .icon-sky     { background: rgba(14,165,233,.12); color: #38bdf8; }
-        .feature-title { font-size: 1.05rem; font-weight: 700; color: #e2e8f0; margin-bottom: .5rem; }
-        .feature-desc { font-size: .875rem; color: #64748b; line-height: 1.65; }
-
-        /* ── How it works ── */
-        .how-section { padding: 6rem clamp(1.5rem, 6vw, 5rem); background: rgba(15,23,42,.5); }
-        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 3.5rem; position: relative; }
-        .step { text-align: center; }
-        .step-number {
-          width: 48px; height: 48px; border-radius: 50%;
-          border: 2px solid rgba(52,211,153,.4);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.1rem; font-weight: 800; color: #34d399;
-          margin: 0 auto 1rem;
-          background: rgba(52,211,153,.06);
-        }
-        .step-title { font-size: .95rem; font-weight: 700; color: #e2e8f0; margin-bottom: .4rem; }
-        .step-desc { font-size: .82rem; color: #64748b; line-height: 1.6; }
-
-        /* ── CTA ── */
-        .cta-section {
-          padding: 6rem clamp(1.5rem, 6vw, 5rem);
-          text-align: center;
-          position: relative; overflow: hidden;
-        }
-        .cta-glow {
-          position: absolute; bottom: -150px; left: 50%; transform: translateX(-50%);
-          width: 600px; height: 600px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(16,185,129,.1) 0%, transparent 70%);
-          pointer-events: none;
-        }
-        .cta-card {
-          background: linear-gradient(145deg,rgba(15,23,42,.9),rgba(30,41,59,.8));
-          border: 1px solid rgba(52,211,153,.2);
-          border-radius: 24px; padding: clamp(2.5rem, 5vw, 4rem);
-          max-width: 640px; margin: 0 auto;
-          box-shadow: 0 0 60px rgba(16,185,129,.08);
-        }
-        .cta-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; color: #fff; letter-spacing: -.02em; margin-bottom: .75rem; }
-        .cta-sub { font-size: .95rem; color: #64748b; line-height: 1.7; margin-bottom: 2rem; }
-        .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-
-        /* ── Footer ── */
-        .footer {
-          padding: 2.5rem clamp(1.5rem, 6vw, 5rem);
-          border-top: 1px solid rgba(255,255,255,.06);
-          display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
-        }
-        .footer-copy { font-size: .8rem; color: #475569; }
-        .footer-links { display: flex; gap: 1.5rem; }
-        .footer-links a { font-size: .8rem; color: #475569; text-decoration: none; transition: color .2s; }
-        .footer-links a:hover { color: #94a3b8; }
-
-        /* ── Light mode ── */
-        @media (prefers-color-scheme: light) {
-          .landing-root { background: #f8fafc; color: #0f172a; }
-          .nav { background: rgba(248,250,252,.88); border-bottom-color: rgba(0,0,0,.08); }
-          .nav-logo { color: #0f172a; }
-          .nav-links a { color: #475569; }
-          .nav-links a:hover { color: #0f172a; }
-          .btn-ghost { border-color: rgba(0,0,0,.18); color: #0f172a; }
-          .btn-ghost:hover { border-color: rgba(0,0,0,.35); color: #0f172a; }
-          .hero h1 { color: #0f172a; }
-          .hero-sub { color: #475569; }
-          .btn-outline-lg { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.12); color: #0f172a; }
-          .btn-outline-lg:hover { background: rgba(0,0,0,.08); border-color: rgba(0,0,0,.22); }
-          .mockup-card { background: linear-gradient(145deg,#fff,#f1f5f9); border-color: rgba(0,0,0,.08); box-shadow: 0 20px 60px rgba(0,0,0,.1); }
-          .mockup-title { color: #94a3b8; }
-          .mockup-amount { color: #0f172a; }
-          .mockup-amount span { color: #94a3b8; }
-          .bar { background: rgba(0,0,0,.08); }
-          .cat-chip { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.07); color: #475569; }
-          .stats-section { border-color: rgba(0,0,0,.08); }
-          .stat-number { color: #0f172a; }
-          .stat-label { color: #64748b; }
-          .section-title { color: #0f172a; }
-          .section-sub { color: #64748b; }
-          .feature-card { background: #fff; border-color: rgba(0,0,0,.08); }
-          .feature-card:hover { border-color: rgba(0,0,0,.15); box-shadow: 0 20px 60px rgba(0,0,0,.08); }
-          .feature-title { color: #0f172a; }
-          .feature-desc { color: #64748b; }
-          .how-section { background: rgba(241,245,249,.8); }
-          .step-title { color: #0f172a; }
-          .step-desc { color: #64748b; }
-          .cta-card { background: linear-gradient(145deg,#fff,#f1f5f9); border-color: rgba(16,185,129,.25); box-shadow: 0 0 60px rgba(16,185,129,.06); }
-          .cta-title { color: #0f172a; }
-          .cta-sub { color: #64748b; }
-          .footer { border-top-color: rgba(0,0,0,.08); }
-          .footer-copy { color: #94a3b8; }
-          .footer-links a { color: #94a3b8; }
-          .footer-links a:hover { color: #475569; }
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 640px) {
-          .nav-links { display: none; }
-          .hero-mockup { margin-top: 3rem; }
-        }
-      `}</style>
-
-      <div className="landing-root">
-        {/* ── NAV ── */}
-        <nav className="nav">
-          <Link href="/" className="nav-logo">
-            <span className="nav-logo-dot" />
-            FinSync
-          </Link>
-          <ul className="nav-links">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#how-it-works">How it works</a></li>
-          </ul>
-          <div className="nav-cta">
-            <Link href="/login" className="btn-ghost">Sign in</Link>
-            <Link href="/register" className="btn-primary">Get started</Link>
-          </div>
-        </nav>
-
-        {/* ── HERO ── */}
-        <section className="hero" style={{ paddingTop: "64px" }}>
-          <div className="hero-glow" />
-          <div className="hero-badge">
-            <span className="hero-badge-dot" />
-            Smarter finances start here
-          </div>
-          <h1>
-            Take control of<br />
-            your <span className="gradient-text">money</span>
-          </h1>
-          <p className="hero-sub">
-            FinSync is the all-in-one personal finance tracker that helps you understand spending, set budgets, and reach your goals — effortlessly.
-          </p>
-          <div className="hero-actions">
-            <Link href="/register" className="btn-primary-lg">
-              Start for free <IconArrow />
-            </Link>
-            <Link href="/login" className="btn-outline-lg">
-              I have an account
-            </Link>
-          </div>
-
-          {/* Dashboard mockup */}
-          <div className="hero-mockup">
-            <div className="mockup-card">
-              <div className="mockup-header">
-                <span className="mockup-title">Monthly Overview</span>
-                <span className="mockup-badge">↑ 12% vs last month</span>
+      {/* 1. HERO SECTION */}
+      <section className="pt-40 pb-20 px-4">
+        <div className="max-w-[1400px] mx-auto bg-white rounded-[60px] p-8 md:p-20 border border-gray-100 shadow-2xl relative overflow-hidden">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="relative z-10">
+              <span className="inline-block px-4 py-2 bg-[#5E72E4]/5 text-[#5E72E4] rounded-full text-xs font-bold uppercase tracking-widest mb-8">
+                Your Money. Your Control.
+              </span>
+              <h1 className="text-6xl md:text-8xl font-black text-[#1A202C] leading-[0.9] tracking-tighter mb-8">
+                Take Control of Your <br />
+                <span className="text-[#5E72E4]">Financial Future</span>
+              </h1>
+              <p className="text-xl text-[#718096] max-w-lg mb-12 font-medium leading-relaxed">
+                Take control of your money with FinSync. Track your spending, save smartly all in one easy-to-use app.
+              </p>
+              <div className="flex flex-wrap gap-5 mb-16">
+                <button className="bg-[#5E72E4] text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 hover:shadow-2xl hover:shadow-[#5E72E4]/40 transition-all">
+                  Download Apps <span className="bg-white/20 rounded-full p-1">→</span>
+                </button>
+                <button className="border-2 border-gray-100 px-10 py-5 rounded-2xl font-bold text-[#1A202C] hover:bg-gray-50 transition-all">
+                  Explore our services
+                </button>
               </div>
-              <div className="mockup-amount"><span>$</span>4,280</div>
-              <div className="mockup-change">Saved $620 this month</div>
-              <div className="mockup-bars">
-                {[40, 65, 50, 80, 60, 100, 75, 55, 90, 70, 85, 95].map((h, i) => (
-                  <div
-                    key={i}
-                    className={`bar${i === 11 ? " bar-active" : ""}`}
-                    style={{ height: `${h}%`, animationDelay: `${i * 50}ms` }}
-                  />
-                ))}
-              </div>
-              <div className="mockup-categories">
-                {[
-                  { label: "Food", color: "#34d399" },
-                  { label: "Transport", color: "#6ee7b7" },
-                  { label: "Housing", color: "#a78bfa" },
-                  { label: "Entertainment", color: "#fbbf24" },
-                  { label: "Savings", color: "#38bdf8" },
-                ].map((c) => (
-                  <div key={c.label} className="cat-chip">
-                    <span className="cat-dot" style={{ background: c.color }} />
-                    {c.label}
-                  </div>
-                ))}
+            </div>
+
+            {/* Phone Mockup System */}
+            <div className="relative flex justify-center items-center h-[600px]">
+              <div className="absolute w-[500px] h-[500px] bg-[#5E72E4]/10 blur-[120px] rounded-full" />
+
+              <img
+                src="/"
+                alt="FinSync App Screens"
+                className="relative z-20 w-[340px] md:w-[420px] drop-shadow-2xl"
+              />
+
+              <div className="absolute bottom-20 -right-10 z-30 bg-white p-5 rounded-[24px] shadow-2xl border border-gray-50 flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-9 h-9 rounded-full bg-gray-200 border-2 border-white" />
+                  ))}
+                </div>
+                <div className="text-[10px] font-bold">500k+ Trusted Users</div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ── STATS ── */}
-        <section className="stats-section">
-          <div className="stats-grid">
-            {[
-              // { val: 12000, suffix: "+", label: "Active users" },
-              { val: 98, suffix: "%", label: "Uptime" },
-              { val: 5, suffix: " min", label: "To get started" },
-              { val: 0, suffix: " $", label: "Cost forever" },
-            ].map((s) => (
-              <div key={s.label} className="stat-item">
-                <div className="stat-number"><Counter to={s.val} suffix={s.suffix} /></div>
-                <div className="stat-label">{s.label}</div>
+  
+    
+
+      {/* 2. FEATURES GRID */}
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-24">
+           <span className="text-[#5E72E4] font-bold text-xs bg-[#5E72E4]/5 px-4 py-2 rounded-full uppercase">Simple. Smart. Financial Control.</span>
+           <h2 className="text-5xl font-black text-[#1A202C] mt-8 mb-6">Powerful Features to Take Control <br/> of Your Finances</h2>
+           <p className="text-[#718096] max-w-2xl mx-auto text-lg">Manage your finances with FinSync. Monitor expenses, save efficiently all within a user-friendly app.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-10">
+           <FeatureCard title="Expense Tracking" icon="📊" iconColor="bg-[#5E72E4]" imagePlaceholder="bg-blue-100" desc="Easily track your daily, weekly, and monthly expenses to stay in control." />
+           <FeatureCard title="Budget Planning" icon="📅" iconColor="bg-[#8A79F9]" imagePlaceholder="bg-purple-100" desc="Set clear budgets, monitor progress, and avoid overspending with smart tools." />
+           <FeatureCard title="Multi-Account Support" icon="💳" iconColor="bg-[#1A202C]" imagePlaceholder="bg-gray-200" desc="Manage all your bank accounts in one place, track balances seamlessly." />
+        </div>
+        <div className="text-center mt-16">
+           <button className="bg-[#5E72E4] text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 mx-auto">Explore All Features →</button>
+        </div>
+      </section>
+
+      {/* 3. STEPS SECTION (PURPLE BG) */}
+      <section className="py-24 px-6">
+        <div className="max-w-[1400px] mx-auto bg-[#8A79F9] rounded-[60px] p-12 md:p-20 text-white grid lg:grid-cols-2 gap-20 items-center">
+           <div className="bg-white rounded-[40px] p-6 h-[500px] shadow-inner">
+              <div className="h-full w-full bg-gray-50 rounded-3xl" />
+           </div>
+           <div>
+              <span className="uppercase text-xs font-bold tracking-widest bg-white/10 px-4 py-2 rounded-full">How it Works</span>
+              <h2 className="text-5xl font-black mt-8 mb-6 leading-tight">Manage Your Finances in <br/> 3 Simple Steps</h2>
+              <div className="space-y-12 mt-12">
+                 {[
+                   { t: "Create Your Free Account", d: "Get started instantly and securely connect your bank accounts." },
+                   { t: "See Smart Reports, Instantly", d: "Receive detailed, automated reports to help you understand your finances." },
+                   { t: "Track Spending & Stay on Budget", d: "Visualize your expenses, set clear budgets, and never lose track." }
+                 ].map((step, i) => (
+                   <div key={i} className="flex gap-6">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center font-black">0{i+1}</div>
+                      <div>
+                        <h4 className="text-xl font-bold mb-2">{step.t}</h4>
+                        <p className="text-white/70 leading-relaxed">{step.d}</p>
+                      </div>
+                   </div>
+                 ))}
               </div>
-            ))}
-          </div>
-        </section>
+              <button className="mt-12 bg-white text-[#8A79F9] px-10 py-5 rounded-2xl font-black">Try it for Free →</button>
+           </div>
+        </div>
+      </section>
 
-        {/* ── FEATURES ── */}
-        <section className="features-section" id="features">
-          <div className="section-label">Features</div>
-          <h2 className="section-title">Everything you need to stay on track</h2>
-          <p className="section-sub">Purpose-built tools to give you a clear picture of your finances — today, this month, and beyond.</p>
-          <div className="features-grid">
-            {features.map((f) => (
-              <div key={f.title} className="feature-card">
-                <div className={`feature-icon icon-${f.color}`}>{f.icon}</div>
-                <div className="feature-title">{f.title}</div>
-                <div className="feature-desc">{f.desc}</div>
+      {/* 4. PRICING SECTION */}
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-20">
+           <span className="text-[#5E72E4] font-bold text-xs uppercase tracking-widest">Choose the Perfect Plan</span>
+           <h2 className="text-5xl font-black text-[#1A202C] mt-4">Transparent Pricing for Everyone</h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8">
+           <div className="p-10 bg-white rounded-[48px] border border-gray-100">
+              <h4 className="text-xl font-black mb-1">Basic</h4>
+              <div className="text-5xl font-black mb-6">$0<span className="text-sm text-gray-400">/month</span></div>
+              <button className="w-full py-4 bg-[#1A202C] text-white rounded-xl font-bold mb-8">Get Started</button>
+              <ul className="space-y-4 text-sm font-medium text-[#718096]">
+                 <li>✔ Connect up to 2 bank accounts</li>
+                 <li>✔ Basic expense tracking</li>
+                 <li>✔ Monthly reports</li>
+              </ul>
+           </div>
+           <div className="p-10 bg-white rounded-[48px] border-4 border-[#5E72E4] relative shadow-2xl">
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#5E72E4] text-white px-6 py-2 rounded-full text-xs font-bold">★ Most Popular</div>
+              <h4 className="text-xl font-black mb-1">Pro (Recommended)</h4>
+              <div className="text-5xl font-black mb-6">$19<span className="text-sm text-gray-400">/month</span></div>
+              <button className="w-full py-4 bg-[#5E72E4] text-white rounded-xl font-bold mb-8">Get Started</button>
+              <ul className="space-y-4 text-sm font-medium text-[#1A202C]">
+                 <li>✔ Connect unlimited accounts</li>
+                 <li>✔ Real-time tracking</li>
+                 <li>✔ Automated insights</li>
+                 <li>✔ Priority email support</li>
+              </ul>
+           </div>
+           <div className="p-10 bg-white rounded-[48px] border border-gray-100">
+              <h4 className="text-xl font-black mb-1">Business</h4>
+              <div className="text-5xl font-black mb-6">$49<span className="text-sm text-gray-400">/month</span></div>
+              <button className="w-full py-4 bg-[#1A202C] text-white rounded-xl font-bold mb-8">Get Started</button>
+              <ul className="space-y-4 text-sm font-medium text-[#718096]">
+                 <li>✔ All Pro features</li>
+                 <li>✔ Multi-user access</li>
+                 <li>✔ Dedicated manager</li>
+              </ul>
+           </div>
+        </div>
+      </section>
+
+      {/* 5. FAQ SECTION */}
+      <section className="py-24 bg-[#F8F9FE] px-6">
+        <div className="max-w-4xl mx-auto">
+           <div className="text-center mb-16">
+              <span className="text-[#5E72E4] font-bold text-xs uppercase tracking-widest">FAQ</span>
+              <h2 className="text-5xl font-black text-[#1A202C] mt-4">Frequently Asked Questions</h2>
+           </div>
+           <div className="space-y-4">
+              <AccordionItem question="What services does FinSync offer?" answer="We offer a full suite of automated financial tracking, reporting, and budget management tools." />
+              <AccordionItem question="How long does a typical setup take?" answer="Setting up your first bank account takes less than 2 minutes." />
+              <AccordionItem question="What industries do you work with?" answer="We work with a diverse range of users from individuals to retail and tech companies." />
+           </div>
+        </div>
+      </section>
+
+      {/* 6. FINAL CTA & FOOTER */}
+      <footer className="bg-white pt-24 pb-12 px-6">
+        <div className="max-w-[1400px] mx-auto bg-[#8A79F9] rounded-[60px] p-12 md:p-20 relative overflow-hidden flex flex-col md:flex-row items-center gap-12 text-white">
+           <div className="flex-1">
+              <h2 className="text-5xl font-black mb-6">Start Managing Your Finances <br/> with Confidence</h2>
+              <div className="flex bg-white/20 p-2 rounded-2xl max-w-md">
+                 <input type="text" placeholder="Enter Your Email" className="bg-transparent px-4 flex-1 outline-none placeholder:text-white" />
+                 <button className="bg-white text-[#8A79F9] px-6 py-3 rounded-xl font-bold">Subscribe →</button>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── HOW IT WORKS ── */}
-        <section className="how-section" id="how-it-works">
-          <div className="section-label">How it works</div>
-          <h2 className="section-title">Up and running in minutes</h2>
-          <div className="steps">
-            {[
-              { n: "1", title: "Create your account", desc: "Sign up in seconds with your email or Google account." },
-              { n: "2", title: "Log your transactions", desc: "Add expenses manually or let FinSync categorise them automatically." },
-              { n: "3", title: "Set your budgets", desc: "Define monthly limits for each spending category." },
-              { n: "4", title: "Watch your money grow", desc: "Hit your savings goals and celebrate every win." },
-            ].map((s) => (
-              <div key={s.n} className="step">
-                <div className="step-number">{s.n}</div>
-                <div className="step-title">{s.title}</div>
-                <div className="step-desc">{s.desc}</div>
+           </div>
+           <div className="relative w-[300px] h-[400px] bg-dark rounded-t-[40px] border-t-8 border-x-8 border-[#1A202C]">
+              <div className="w-full h-full bg-white rounded-t-3xl overflow-hidden p-4">
+                 <div className="h-full bg-gray-50 rounded-xl" />
               </div>
-            ))}
-          </div>
-        </section>
+           </div>
+        </div>
 
-        {/* ── CTA ── */}
-        <section className="cta-section">
-          <div className="cta-glow" />
-          <div className="cta-card">
-            <h2 className="cta-title">Ready to sync your finances?</h2>
-            <p className="cta-sub">Join thousands of people who already use FinSync to build healthier money habits — no credit card required.</p>
-            <div className="cta-actions">
-              <Link href="/register" className="btn-primary-lg">
-                Create free account <IconArrow />
-              </Link>
-              <Link href="/login" className="btn-outline-lg">Sign in</Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FOOTER ── */}
-        <footer className="footer">
-          <span className="footer-copy">© {new Date().getFullYear()} FinSync. All rights reserved.</span>
-          <div className="footer-links">
-            <Link href="/login">Sign in</Link>
-            <Link href="/register">Register</Link>
-          </div>
-        </footer>
-      </div>
+        <div className="max-w-7xl mx-auto mt-24 grid grid-cols-2 md:grid-cols-4 gap-12 border-b border-gray-100 pb-12">
+           <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-6 font-black text-2xl tracking-tighter">
+                <div className="w-8 h-8 bg-[#5E72E4] rounded-lg" /> FinSync
+              </div>
+              <p className="text-[#718096] text-sm leading-relaxed">Your personal health companion for a healthier, organized life.</p>
+           </div>
+           {['Features', 'Resources', 'Company'].map(title => (
+             <div key={title}>
+               <h5 className="font-black text-[#1A202C] mb-6">{title}</h5>
+               <ul className="space-y-4 text-sm text-[#718096]">
+                 <li>Link Item One</li>
+                 <li>Link Item Two</li>
+                 <li>Link Item Three</li>
+               </ul>
+             </div>
+           ))}
+        </div>
+        <div className="max-w-7xl mx-auto mt-12 flex justify-between text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+           <div>©2026 TruePath UI - All Rights Reserved</div>
+           <div className="flex gap-8">
+              <span>Terms of Service</span>
+              <span>Privacy Policy</span>
+           </div>
+        </div>
+      </footer>
     </div>
   );
 }
