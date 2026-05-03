@@ -70,10 +70,13 @@ function mapIouDoc(
     userId,
     personName: String(data.personName ?? ""),
     amount,
+    category: String(data.category ?? "Personal"),
     direction: normalizeDirection(data.direction ?? data.iouType),
-    reason: String(data.reason ?? data.description ?? ""),
+    description: String(data.description ?? data.reason ?? ""),
     date: normalizeDate(data.date),
+    dueDate: data.dueDate ? normalizeDate(data.dueDate) : null,
     settled,
+    settledAmount: Number(data.settledAmount ?? 0),
     createdAt:
       data.createdAt instanceof Timestamp
         ? data.createdAt.toDate().toISOString()
@@ -112,8 +115,8 @@ export async function updateIOU(
     ...data,
   };
 
-  if (typeof data.reason === "string") {
-    updates.description = data.reason;
+  if (typeof (data as any).reason === "string") {
+    updates.description = (data as any).reason;
   }
   if (typeof data.settled === "boolean") {
     updates.status = data.settled ? "settled" : "pending";

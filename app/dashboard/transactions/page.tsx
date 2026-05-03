@@ -58,7 +58,7 @@ export default function TransactionsPage() {
       return (
         (tx.title || "").toLowerCase().includes(q) ||
         tx.category.toLowerCase().includes(q) ||
-        (tx.description || "").toLowerCase().includes(q) ||
+        (tx.transactionDescription || "").toLowerCase().includes(q) ||
         tx.amount.toString().includes(q)
       );
     }
@@ -218,7 +218,7 @@ export default function TransactionsPage() {
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {tx.category}
-                        {tx.walletName ? ` · ${tx.walletName}` : ""}
+                        {tx.wallet && tx.wallet !== "Cash" ? ` · ${tx.wallet}` : ""}
                       </p>
                     </div>
 

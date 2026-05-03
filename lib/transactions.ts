@@ -116,10 +116,10 @@ export async function addTransaction(
   await setDoc(docRef, { id: docRef.id }, { merge: true });
 
   // Update wallet balance if a wallet was selected
-  if (transaction.walletName) {
+  if (transaction.wallet && transaction.wallet !== "Cash") {
     const delta =
       transaction.type === "income" ? transaction.amount : -transaction.amount;
-    await adjustWalletBalance(userId, transaction.walletName, delta);
+    await adjustWalletBalance(userId, transaction.wallet, delta);
   }
 
   return docRef.id;
@@ -162,7 +162,7 @@ export async function deleteTransaction(
 
   if (txSnap.exists()) {
     const data = txSnap.data();
-    const walletName = data.walletName || data.wallet || "";
+    const walletName = data.wallet || "";
     const amount = data.amount || 0;
     const type = (data.type || "").toLowerCase();
 
@@ -189,7 +189,7 @@ export async function updateTransaction(
 
   if (txSnap.exists()) {
     const old = txSnap.data();
-    const oldWallet = old.walletName || old.wallet || "";
+    const oldWallet = old.wallet || "";
     const oldAmount = old.amount || 0;
     const oldType = (old.type || "").toLowerCase();
 
@@ -200,7 +200,7 @@ export async function updateTransaction(
     }
 
     // Apply new wallet balance
-    const newWallet = data.walletName ?? oldWallet;
+    const newWallet = data.wallet ?? oldWallet;
     const newAmount = data.amount ?? oldAmount;
     const newType = data.type ?? oldType;
     if (newWallet) {

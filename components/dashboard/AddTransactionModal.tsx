@@ -13,10 +13,9 @@ interface AddTransactionModalProps {
     amount: number;
     title: string;
     category: string;
-    description: string;
+    transactionDescription: string;
     date: string;
-    walletId?: string;
-    walletName?: string;
+    wallet: string;
   }) => Promise<void>;
   defaultType?: "income" | "expense";
   wallets?: Wallet[];
@@ -39,9 +38,9 @@ export default function AddTransactionModal({
   const [amount, setAmount] = useState("");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
+  const [transactionDescription, setTransactionDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [walletId, setWalletId] = useState("");
+  const [wallet, setWallet] = useState("Cash");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -59,24 +58,22 @@ export default function AddTransactionModal({
     if (!amount || !title || !category || !date) return;
     setLoading(true);
     try {
-      const selectedWallet = wallets.find((w) => w.id === walletId);
       await onSubmit({
         type,
         amount: parseFloat(amount),
         title,
         category,
-        description,
+        transactionDescription,
         date,
-        walletId: walletId || undefined,
-        walletName: selectedWallet?.name || undefined,
+        wallet,
       });
       // Reset form
       setAmount("");
       setTitle("");
       setCategory("");
-      setDescription("");
+      setTransactionDescription("");
       setDate(new Date().toISOString().split("T")[0]);
-      setWalletId("");
+      setWallet("Cash");
       onClose();
     } finally {
       setLoading(false);
@@ -198,8 +195,8 @@ export default function AddTransactionModal({
             </label>
             <input
               type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={transactionDescription}
+              onChange={(e) => setTransactionDescription(e.target.value)}
               placeholder="e.g., Lunch at restaurant"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 px-4 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
             />
@@ -212,13 +209,13 @@ export default function AddTransactionModal({
                 Wallet <span className="text-gray-400">(optional)</span>
               </label>
               <select
-                value={walletId}
-                onChange={(e) => setWalletId(e.target.value)}
+                value={wallet}
+                onChange={(e) => setWallet(e.target.value)}
                 className="w-full rounded-xl border border-gray-300 bg-white py-3 px-4 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
               >
-                <option value="">No wallet</option>
+                <option value="Cash">Cash</option>
                 {wallets.map((w) => (
-                  <option key={w.id} value={w.id}>
+                  <option key={w.id} value={w.name}>
                     {WALLET_ICONS[w.type] || "💰"} {w.name} ({CURRENCY_SYMBOL}{" "}
                     {w.balance.toLocaleString("en-IN")})
                   </option>

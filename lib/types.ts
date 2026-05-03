@@ -5,10 +5,9 @@ export interface Transaction {
   amount: number;
   title: string;
   category: string;
-  description: string;
+  transactionDescription: string;
   date: string; // ISO string
-  walletId?: string;
-  walletName?: string;
+  wallet: string;
   createdAt: string;
 }
 
@@ -50,10 +49,13 @@ export interface IOU {
   userId: string;
   personName: string;
   amount: number;
+  category: string;
   direction: "owe" | "owed"; // "owe" = I owe them, "owed" = they owe me
-  reason: string;
+  description: string;
   date: string;
+  dueDate?: string | null;
   settled: boolean;
+  settledAmount?: number;
   createdAt: string;
 }
 
@@ -83,6 +85,18 @@ export const EXPENSE_CATEGORIES = [
   "Personal Care",
   "Travel",
   "Gifts & Donations",
+  "Other",
+] as const;
+
+export const IOU_CATEGORIES = [
+  "Personal",
+  "Food",
+  "Entertainment",
+  "Shopping",
+  "Coffee",
+  "Transport",
+  "Gift",
+  "Emergency",
   "Other",
 ] as const;
 
