@@ -1,3 +1,5 @@
+import {Timestamp} from "firebase/firestore";
+
 export interface Transaction {
   id?: string;
   userId: string;
@@ -6,7 +8,7 @@ export interface Transaction {
   title: string;
   category: string;
   transactionDescription: string;
-  date: string; // ISO string
+  date: Timestamp; // ISO string
   wallet: string;
   createdAt: string;
 }

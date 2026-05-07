@@ -1,4 +1,5 @@
 "use client";
+import {Timestamp} from "firebase/firestore";
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
@@ -16,7 +17,13 @@ const WALLET_ICONS: Record<string, string> = {
   cash: "💵",
   digital: "📱",
 };
+const formatToDDMMYYYY = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
 
+  return `${day}-${month}-${year}`;
+};
 export default function NewTransactionPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -30,7 +37,9 @@ export default function NewTransactionPage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [transactionDescription, setTransactionDescription] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState<Timestamp>(
+      Timestamp.fromDate(new Date())
+  );
   const [wallet, setWallet] = useState("Cash");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,7 +92,7 @@ export default function NewTransactionPage() {
         title,
         category,
         transactionDescription,
-        date,
+        date: date,
         wallet,
         createdAt: new Date().toISOString(),
       });
@@ -240,11 +249,17 @@ export default function NewTransactionPage() {
               Date
             </label>
             <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                type="date"
+                value={date.toDate().toISOString().split("T")[0]}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setDate(
+                        Timestamp.fromDate(new Date(e.target.value))
+                    );
+                  }
+                }}
+                required
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
           </div>
 
