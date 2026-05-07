@@ -39,7 +39,7 @@ export default function AnalyticsPage() {
   const filtered = useMemo(() => {
     const now = new Date();
     return transactions.filter((t) => {
-      const d = new Date(t.date);
+      const d = t.date.toDate();
       if (period === "week") {
         const weekAgo = new Date(now);
         weekAgo.setDate(weekAgo.getDate() - 7);
@@ -105,7 +105,10 @@ export default function AnalyticsPage() {
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split("T")[0];
       const dayTotal = transactions
-        .filter((t) => t.type === "expense" && t.date === dateStr)
+          .filter((t) => {
+            const d = t.date.toDate().toISOString().split("T")[0];
+            return t.type === "expense" && d === dateStr;
+          })
         .reduce((s, t) => s + t.amount, 0);
       days.push({
         label: d.toLocaleDateString("en-IN", { weekday: "short" }),

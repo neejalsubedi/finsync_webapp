@@ -67,9 +67,11 @@ export default function TransactionsPage() {
 
   // Group by date
   const grouped = filtered.reduce<Record<string, Transaction[]>>((acc, tx) => {
-    const dateKey = tx.date;
+    const dateKey = tx.date.toDate().toISOString().split("T")[0];
+
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(tx);
+
     return acc;
   }, {});
 

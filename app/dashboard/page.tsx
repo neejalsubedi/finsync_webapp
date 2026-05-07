@@ -307,7 +307,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {tx.category} ·{" "}
-                    {new Date(tx.date).toLocaleDateString("en-IN", {
+                    {tx.date.toDate().toLocaleDateString("en-IN", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
