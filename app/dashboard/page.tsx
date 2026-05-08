@@ -22,6 +22,9 @@ import { getUserData, UserData } from "@/lib/users";
 import { Transaction } from "@/lib/types";
 import { CURRENCY_SYMBOL } from "@/lib/currency";
 import toast from "react-hot-toast";
+import { Timestamp } from "firebase/firestore";
+import {parseDate} from "@/lib/dateHelper";
+
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -307,7 +310,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {tx.category} ·{" "}
-                    {tx.date.toDate().toLocaleDateString("en-IN", {
+                    {parseDate(tx.date).toLocaleDateString("en-IN", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",

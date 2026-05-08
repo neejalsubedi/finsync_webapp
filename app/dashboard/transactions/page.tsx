@@ -15,6 +15,7 @@ import { getTransactions, deleteTransaction } from "@/lib/transactions";
 import { Transaction } from "@/lib/types";
 import { CURRENCY_SYMBOL } from "@/lib/currency";
 import toast from "react-hot-toast";
+import {parseDate} from "@/lib/dateHelper";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
@@ -67,7 +68,8 @@ export default function TransactionsPage() {
 
   // Group by date
   const grouped = filtered.reduce<Record<string, Transaction[]>>((acc, tx) => {
-    const dateKey = tx.date.toDate().toISOString().split("T")[0];
+    const dateObj = parseDate(tx.date);
+    const dateKey = dateObj.toISOString().split("T")[0];
 
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(tx);
@@ -76,9 +78,8 @@ export default function TransactionsPage() {
   }, {});
 
   const sortedDates = Object.keys(grouped).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
-
   if (!user) return null;
 
   return (
