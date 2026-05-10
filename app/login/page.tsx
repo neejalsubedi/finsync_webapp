@@ -31,7 +31,9 @@ export default function LoginPage() {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Failed to sign in";
-      if (
+      if (message.includes("email-not-verified")) {
+        toast.error("Please verify your email address to sign in.");
+      } else if (
         message.includes("user-not-found") ||
         message.includes("invalid-credential")
       ) {

@@ -19,6 +19,7 @@ import { FcGoogle } from "react-icons/fc";
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+977");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,8 +36,18 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6 || password.length > 8) {
-      toast.error("Password must be between 6 and 8 characters long");
+    if (name.length > 50) {
+      toast.error("Name cannot be longer than 50 characters");
+      return;
+    }
+
+    if (!/^[a-zA-Z]/.test(name)) {
+      toast.error("Name must start with a letter");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
       return;
     }
 
@@ -57,9 +68,10 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await register(email, password, name, phone);
-      toast.success("Account created successfully!");
-      router.push("/dashboard");
+      const fullPhone = phone ? `${countryCode}${phone}` : "";
+      await register(email, password, name, fullPhone);
+      toast.success("Account created successfully! Please verify your email to login.");
+      router.push("/login");
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Failed to create account";
@@ -151,15 +163,33 @@ export default function RegisterPage() {
           >
             Phone number <span className="text-gray-400">(optional)</span>
           </label>
-          <div className="relative">
-            <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative flex">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center z-10">
+              <FiPhone className="h-5 w-5 text-gray-400 mr-1" />
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="bg-transparent border-none text-gray-900 dark:text-white focus:ring-0 text-base py-0 pl-1 pr-2 cursor-pointer outline-none"
+                style={{ WebkitAppearance: 'none', appearance: 'none' }}
+              >
+                <option className="text-gray-900 bg-white dark:bg-gray-900 dark:text-white" value="+977">+977 (NP)</option>
+                <option className="text-gray-900 bg-white dark:bg-gray-900 dark:text-white" value="+1">+1 (US)</option>
+                <option className="text-gray-900 bg-white dark:bg-gray-900 dark:text-white" value="+44">+44 (UK)</option>
+                <option className="text-gray-900 bg-white dark:bg-gray-900 dark:text-white" value="+91">+91 (IN)</option>
+                <option className="text-gray-900 bg-white dark:bg-gray-900 dark:text-white" value="+61">+61 (AU)</option>
+              </select>
+            </div>
             <input
               id="phone"
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+977 98XXXXXXXX"
-              className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-4 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500"
+              maxLength={15}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "");
+                if (val.length <= 15) setPhone(val);
+              }}
+              placeholder="98XXXXXXXX"
+              className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-[145px] pr-4 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500"
             />
           </div>
         </div>
@@ -179,7 +209,7 @@ export default function RegisterPage() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="6-8 chars, 1 uppercase, 1 number/symbol"
+              placeholder="Min 6 chars, 1 uppercase, 1 number/symbol"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-12 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500"
             />
             <button

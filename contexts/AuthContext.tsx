@@ -17,6 +17,7 @@ import {
   updateProfile,
   signInWithPopup,
   getAdditionalUserInfo,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { addUserToDatabase } from "@/lib/users";
@@ -51,7 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    if (!result.user.emailVerified) {
+      await signOut(auth);
+      throw new Error("email-not-verified");
+    }
   };
 
   const register = async (
@@ -64,6 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateProfile(result.user, { displayName: name });
     // Create the Users/{uid} doc matching the mobile app structure
     await addUserToDatabase(result.user.uid, email, name, phoneNumber || "");
+    await sendEmailVerification(result.user);
+    await signOut(auth);
   };
 
   const loginWithGoogle = async () => {

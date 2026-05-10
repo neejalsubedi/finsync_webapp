@@ -26,6 +26,17 @@ export default function SettingsPage() {
 
   const handleUpdateName = async () => {
     if (!user || !displayName.trim()) return;
+
+    if (displayName.trim().length > 50) {
+      toast.error("Display name cannot be longer than 50 characters");
+      return;
+    }
+
+    if (!/^[a-zA-Z]/.test(displayName.trim())) {
+      toast.error("Display name must start with a letter");
+      return;
+    }
+
     setSavingName(true);
     try {
       await updateProfile(user, { displayName: displayName.trim() });
