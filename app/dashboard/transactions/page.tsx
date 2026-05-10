@@ -104,7 +104,7 @@ export default function TransactionsPage() {
           href="/dashboard/transactions/new"
           className="flex h-9 items-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-sm font-semibold text-white hover:bg-emerald-700"
         >
-          + Add
+          + Add Transaction
         </Link>
       </div>
 

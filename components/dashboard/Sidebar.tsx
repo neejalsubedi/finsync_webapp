@@ -12,6 +12,7 @@ import {
   FiSettings,
   FiLogOut,
   FiX,
+  FiList,
 } from "react-icons/fi";
 import { TbMoneybag } from "react-icons/tb";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +26,7 @@ interface SidebarProps {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: FiHome },
+  { href: "/dashboard/transactions", label: "Transactions", icon: FiList },
   { href: "/dashboard/budgets", label: "Budgets", icon: TbMoneybag },
   { href: "/dashboard/analytics", label: "Analytics", icon: FiPieChart },
   { href: "/dashboard/goals", label: "Goals", icon: FiTarget },

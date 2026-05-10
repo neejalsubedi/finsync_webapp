@@ -251,9 +251,20 @@ function AddBudgetModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name || !amount) return;
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+    if (numericAmount > 1000000) {
+      toast.error("Amount cannot exceed 1,000,000");
+      return;
+    }
+
     setLoading(true);
     try {
-      await onSubmit({ name, amount: parseFloat(amount), period, category });
+      await onSubmit({ name, amount: numericAmount, period, category });
       onClose();
     } finally {
       setLoading(false);

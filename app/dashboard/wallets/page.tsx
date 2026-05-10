@@ -60,7 +60,14 @@ export default function WalletsPage() {
 
   const handleUpdateBalance = async (id: string) => {
     const val = parseFloat(editBalance);
-    if (isNaN(val)) return;
+    if (isNaN(val) || val <= 0) {
+      toast.error("Balance must be greater than 0");
+      return;
+    }
+    if (val > 1000000) {
+      toast.error("Balance cannot exceed 1,000,000");
+      return;
+    }
     try {
       await updateWallet(id, { balance: val });
       setWallets((prev) =>
@@ -289,12 +296,23 @@ function AddWalletModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name) return;
+
+    const numericBalance = parseFloat(balance);
+    if (isNaN(numericBalance) || numericBalance <= 0) {
+      toast.error("Balance must be greater than 0");
+      return;
+    }
+    if (numericBalance > 1000000) {
+      toast.error("Balance cannot exceed 1,000,000");
+      return;
+    }
+
     setLoading(true);
     try {
       await onSubmit({
         name,
         type,
-        balance: parseFloat(balance) || 0,
+        balance: numericBalance,
         icon: WALLET_ICONS[type],
         color,
       });

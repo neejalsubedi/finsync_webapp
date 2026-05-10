@@ -83,12 +83,22 @@ export default function NewTransactionPage() {
       return;
     }
 
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+    if (numericAmount > 1000000) {
+      toast.error("Amount cannot exceed 1,000,000");
+      return;
+    }
+
     setLoading(true);
     try {
       await addTransaction({
         userId: user.uid,
         type,
-        amount: parseFloat(amount),
+        amount: numericAmount,
         title,
         category,
         transactionDescription,

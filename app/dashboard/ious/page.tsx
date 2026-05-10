@@ -406,11 +406,22 @@ function IOUModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!personName || !amount) return;
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+    if (numericAmount > 1000000) {
+      toast.error("Amount cannot exceed 1,000,000");
+      return;
+    }
+
     setLoading(true);
     try {
       await onSubmit({
         personName,
-        amount: parseFloat(amount),
+        amount: numericAmount,
         category,
         direction,
         description,
@@ -729,7 +740,15 @@ function PartialSettleModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
-    if (!val || val <= 0 || val > remaining) return;
+    if (isNaN(val) || val <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+    if (val > 1000000) {
+      toast.error("Amount cannot exceed 1,000,000");
+      return;
+    }
+    if (val > remaining) return;
     setLoading(true);
     try {
       await onSubmit(val);

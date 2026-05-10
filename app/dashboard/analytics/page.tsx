@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Transaction } from "@/lib/types";
 import { getTransactions } from "@/lib/transactions";
+import { parseDate } from "@/lib/dateHelper";
 import {
   FiTrendingUp,
   FiTrendingDown,
@@ -39,7 +40,7 @@ export default function AnalyticsPage() {
   const filtered = useMemo(() => {
     const now = new Date();
     return transactions.filter((t) => {
-      const d = t.date.toDate();
+      const d = parseDate(t.date);
       if (period === "week") {
         const weekAgo = new Date(now);
         weekAgo.setDate(weekAgo.getDate() - 7);
@@ -106,7 +107,7 @@ export default function AnalyticsPage() {
       const dateStr = d.toISOString().split("T")[0];
       const dayTotal = transactions
           .filter((t) => {
-            const d = t.date.toDate().toISOString().split("T")[0];
+            const d = parseDate(t.date).toISOString().split("T")[0];
             return t.type === "expense" && d === dateStr;
           })
         .reduce((s, t) => s + t.amount, 0);

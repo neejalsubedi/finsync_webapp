@@ -58,7 +58,14 @@ export default function GoalsPage() {
 
   const handleAddMoney = async (goalId: string) => {
     const amt = parseFloat(addMoneyAmount);
-    if (!amt || amt <= 0) return;
+    if (isNaN(amt) || amt <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+    if (amt > 1000000) {
+      toast.error("Amount cannot exceed 1,000,000");
+      return;
+    }
     const goal = goals.find((g) => g.id === goalId);
     if (!goal) return;
     try {
@@ -289,11 +296,22 @@ function AddGoalModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name || !amount || !deadline) return;
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+    if (numericAmount > 1000000) {
+      toast.error("Amount cannot exceed 1,000,000");
+      return;
+    }
+
     setLoading(true);
     try {
       await onSubmit({
         name,
-        targetAmount: parseFloat(amount),
+        targetAmount: numericAmount,
         deadline,
         icon,
       });
