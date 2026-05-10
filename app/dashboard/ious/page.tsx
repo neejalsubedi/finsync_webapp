@@ -417,6 +417,14 @@ function IOUModal({
       return;
     }
 
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (selectedDate > today) {
+      toast.error("Date cannot be in the future");
+      return;
+    }
+
     setLoading(true);
     try {
       await onSubmit({

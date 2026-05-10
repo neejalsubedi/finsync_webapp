@@ -93,6 +93,14 @@ export default function NewTransactionPage() {
       return;
     }
 
+    const selectedDate = date.toDate();
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (selectedDate > today) {
+      toast.error("Date cannot be in the future");
+      return;
+    }
+
     setLoading(true);
     try {
       await addTransaction({
