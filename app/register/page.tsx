@@ -168,7 +168,14 @@ export default function RegisterPage() {
               <FiPhone className="h-5 w-5 text-gray-400 mr-1" />
               <select
                 value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
+                onChange={(e) => {
+                  const newCode = e.target.value;
+                  setCountryCode(newCode);
+                  const maxLen = newCode === "+44" ? 11 : 10;
+                  if (phone.length > maxLen) {
+                    setPhone(phone.slice(0, maxLen));
+                  }
+                }}
                 className="bg-transparent border-none text-gray-900 dark:text-white focus:ring-0 text-base py-0 pl-1 pr-2 cursor-pointer outline-none"
                 style={{ WebkitAppearance: 'none', appearance: 'none' }}
               >
@@ -183,10 +190,11 @@ export default function RegisterPage() {
               id="phone"
               type="tel"
               value={phone}
-              maxLength={15}
+              maxLength={countryCode === "+44" ? 11 : 10}
               onChange={(e) => {
                 const val = e.target.value.replace(/\D/g, "");
-                if (val.length <= 15) setPhone(val);
+                const maxLen = countryCode === "+44" ? 11 : 10;
+                if (val.length <= maxLen) setPhone(val);
               }}
               placeholder="98XXXXXXXX"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-[145px] pr-4 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500"
@@ -209,7 +217,7 @@ export default function RegisterPage() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min 6 chars, 1 uppercase, 1 number/symbol"
+              placeholder="*******"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-12 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500"
             />
             <button
