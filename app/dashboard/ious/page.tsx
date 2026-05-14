@@ -484,8 +484,10 @@ function IOUModal({
               onChange={(e) => setPersonName(e.target.value)}
               placeholder="e.g., John"
               required
+              maxLength={150}
               className="w-full rounded-xl border border-gray-300 bg-white py-3 px-4 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
+            <p className="mt-1 text-right text-xs text-gray-400">{personName.length} / 150</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">

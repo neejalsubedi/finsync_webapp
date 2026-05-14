@@ -2,7 +2,8 @@
 
 import { useState, FormEvent, useEffect } from "react";
 import { FiX, FiArrowUpRight, FiArrowDownLeft } from "react-icons/fi";
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, Wallet } from "@/lib/types";
+import { Wallet } from "@/lib/types";
+import CategorySelect from "@/components/dashboard/CategorySelect";
 import { CURRENCY_SYMBOL } from "@/lib/currency";
 
 interface AddTransactionModalProps {
@@ -25,6 +26,12 @@ const WALLET_ICONS: Record<string, string> = {
   bank: "🏦",
   cash: "💵",
   digital: "📱",
+};
+
+const WALLET_COLORS: Record<string, string> = {
+  bank: "#3b82f6",
+  cash: "#10b981",
+  digital: "#8b5cf6",
 };
 
 export default function AddTransactionModal({
@@ -51,7 +58,7 @@ export default function AddTransactionModal({
     setCategory("");
   }, [type]);
 
-  const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -164,8 +171,10 @@ export default function AddTransactionModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Monthly Salary"
               required
+              maxLength={150}
               className="w-full rounded-xl border border-gray-300 bg-white py-3 px-4 text-gray-900 placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
             />
+            <p className="mt-1 text-right text-xs text-gray-400">{title.length} / 150</p>
           </div>
 
           {/* Category */}
@@ -173,19 +182,11 @@ export default function AddTransactionModal({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
               Category
             </label>
-            <select
+            <CategorySelect
+              type={type}
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              className="w-full rounded-xl border border-gray-300 bg-white py-3 px-4 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              onChange={setCategory}
+            />
           </div>
 
           {/* Description */}
@@ -202,27 +203,64 @@ export default function AddTransactionModal({
             />
           </div>
 
-          {/* Wallet */}
-          {wallets.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Wallet <span className="text-gray-400">(optional)</span>
-              </label>
-              <select
-                value={wallet}
-                onChange={(e) => setWallet(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 bg-white py-3 px-4 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-              >
-                <option value="Cash">Cash</option>
-                {wallets.map((w) => (
-                  <option key={w.id} value={w.name}>
-                    {WALLET_ICONS[w.type] || "💰"} {w.name} ({CURRENCY_SYMBOL}{" "}
-                    {w.balance.toLocaleString("en-IN")})
-                  </option>
-                ))}
-              </select>
+          {/* Wallet Selector — always visible, 3-col card grid */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Wallet
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(wallets.length > 0
+                ? wallets
+                : [
+                    { id: "cash-d", name: "Cash", type: "cash" as const, balance: 0, icon: "💵", color: "#10b981", userId: "", createdAt: "" },
+                    { id: "bank-d", name: "Bank", type: "bank" as const, balance: 0, icon: "🏦", color: "#3b82f6", userId: "", createdAt: "" },
+                    { id: "digital-d", name: "Digital Wallet", type: "digital" as const, balance: 0, icon: "📱", color: "#8b5cf6", userId: "", createdAt: "" },
+                  ]
+              ).map((w) => {
+                const isSelected = wallet === w.name;
+                const accentColor = w.color || WALLET_COLORS[w.type] || "#10b981";
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => setWallet(w.name)}
+                    className={`relative flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-all ${
+                      isSelected
+                        ? "shadow-md"
+                        : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
+                    }`}
+                    style={
+                      isSelected
+                        ? {
+                            borderColor: accentColor,
+                            backgroundColor: accentColor + "18",
+                          }
+                        : {}
+                    }
+                  >
+                    <span className="text-2xl leading-none">{w.icon || WALLET_ICONS[w.type]}</span>
+                    <span
+                      className="text-xs font-semibold leading-tight"
+                      style={{ color: isSelected ? accentColor : undefined }}
+                    >
+                      {w.name}
+                    </span>
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                      {CURRENCY_SYMBOL}{w.balance.toLocaleString("en-IN", { minimumFractionDigits: 0 })}
+                    </span>
+                    {isSelected && (
+                      <span
+                        className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full text-white text-[8px]"
+                        style={{ backgroundColor: accentColor }}
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
 
           {/* Date */}
           <div>

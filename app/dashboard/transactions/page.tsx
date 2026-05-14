@@ -15,7 +15,8 @@ import { getTransactions, deleteTransaction } from "@/lib/transactions";
 import { Transaction } from "@/lib/types";
 import { CURRENCY_SYMBOL } from "@/lib/currency";
 import toast from "react-hot-toast";
-import {parseDate} from "@/lib/dateHelper";
+import { parseDate } from "@/lib/dateHelper";
+import { getCategoryIcon } from "@/lib/categories";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
@@ -78,7 +79,7 @@ export default function TransactionsPage() {
   }, {});
 
   const sortedDates = Object.keys(grouped).sort(
-      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
   if (!user) return null;
 
@@ -125,15 +126,14 @@ export default function TransactionsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                filter === f
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${filter === f
                   ? f === "income"
                     ? "bg-green-500 text-white shadow-sm"
                     : f === "expense"
                       ? "bg-red-500 text-white shadow-sm"
                       : "bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white"
                   : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              }`}
+                }`}
             >
               {f === "all" && <FiFilter className="h-3.5 w-3.5" />}
               {f === "income" && <FiArrowDownLeft className="h-3.5 w-3.5" />}
@@ -201,17 +201,23 @@ export default function TransactionsPage() {
                   >
                     {/* Icon */}
                     <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                        tx.type === "income"
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tx.type === "income"
                           ? "bg-green-100 dark:bg-green-900/30"
                           : "bg-red-100 dark:bg-red-900/30"
-                      }`}
+                        }`}
                     >
-                      {tx.type === "income" ? (
-                        <FiArrowDownLeft className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      ) : (
-                        <FiArrowUpRight className="h-5 w-5 text-red-500 dark:text-red-400" />
-                      )}
+                      {(() => {
+                        const Icon = getCategoryIcon(tx.category, tx.type);
+                        console.log(tx.category, tx.type)
+                        if (Icon) {
+                          return <Icon className={`h-5 w-5 ${tx.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`} />;
+                        }
+                        return tx.type === "income" ? (
+                          <FiArrowDownLeft className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <FiArrowUpRight className="h-5 w-5 text-red-500 dark:text-red-400" />
+                        );
+                      })()}
                     </div>
 
                     {/* Details */}
@@ -227,11 +233,10 @@ export default function TransactionsPage() {
 
                     {/* Amount */}
                     <p
-                      className={`text-sm font-bold whitespace-nowrap ${
-                        tx.type === "income"
+                      className={`text-sm font-bold whitespace-nowrap ${tx.type === "income"
                           ? "text-green-600 dark:text-green-400"
                           : "text-red-500 dark:text-red-400"
-                      }`}
+                        }`}
                     >
                       {tx.type === "income" ? "+" : "-"}
                       {CURRENCY_SYMBOL}{" "}

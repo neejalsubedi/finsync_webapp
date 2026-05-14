@@ -86,8 +86,10 @@ async function adjustWalletBalance(
   delta: number,
 ): Promise<void> {
   if (!walletName) return;
+  // Use the flat "wallets" collection (same as lib/wallets.ts)
   const q = query(
-    walletCollection(userId),
+    collection(db, "wallets"),
+    where("userId", "==", userId),
     where("name", "==", walletName),
     limit(1),
   );
@@ -115,8 +117,8 @@ export async function addTransaction(
   // Also write the id into the document so it matches mobile app behaviour
   await setDoc(docRef, { id: docRef.id }, { merge: true });
 
-  // Update wallet balance if a wallet was selected
-  if (transaction.wallet && transaction.wallet !== "Cash") {
+  // Update wallet balance for selected wallet (including Cash)
+  if (transaction.wallet) {
     const delta =
       transaction.type === "income" ? transaction.amount : -transaction.amount;
     await adjustWalletBalance(userId, transaction.wallet, delta);

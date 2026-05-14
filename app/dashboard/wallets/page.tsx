@@ -8,6 +8,7 @@ import {
   getWallets,
   deleteWallet,
   updateWallet,
+  recalculateWalletBalances,
 } from "@/lib/wallets";
 import toast from "react-hot-toast";
 import {
@@ -25,6 +26,18 @@ const WALLET_ICONS: Record<string, string> = {
   digital: "📱",
 };
 
+const DEFAULT_WALLETS: Array<{
+  name: string;
+  type: "bank" | "cash" | "digital";
+  balance: number;
+  icon: string;
+  color: string;
+}> = [
+  { name: "Cash", type: "cash", balance: 0, icon: "💵", color: "#10b981" },
+  { name: "Bank", type: "bank", balance: 0, icon: "🏦", color: "#3b82f6" },
+  { name: "Digital Wallet", type: "digital", balance: 0, icon: "📱", color: "#8b5cf6" },
+];
+
 export default function WalletsPage() {
   const { user } = useAuth();
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -36,7 +49,21 @@ export default function WalletsPage() {
   const fetchWallets = useCallback(async () => {
     if (!user) return;
     try {
-      setWallets(await getWallets(user.uid));
+      let data = await getWallets(user.uid);
+      if (data.length === 0) {
+        // Seed the 3 default wallets for new users
+        for (const w of DEFAULT_WALLETS) {
+          await addWallet({
+            ...w,
+            userId: user.uid,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+      // Always recalculate balances from transaction history on load
+      await recalculateWalletBalances(user.uid);
+      data = await getWallets(user.uid);
+      setWallets(data);
     } catch (err) {
       console.error("Failed to fetch wallets:", err);
     } finally {
